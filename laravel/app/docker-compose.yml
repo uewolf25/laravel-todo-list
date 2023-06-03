@@ -1,0 +1,44 @@
+version: '3'
+services:
+  laravel10-nginx:
+    container_name: "laravel10-nginx"
+    build:
+      context: ./docker/nginx
+    depends_on:
+      - laravel10-app
+    ports:
+      - 80:80
+    volumes:
+      - ./:/src
+
+  laravel10-app:
+    container_name: "laravel10-app"
+    build:
+      context: ./docker/php
+    depends_on:
+      - laravel10-mysql
+    ports:
+      - 5173:5173
+    volumes:
+      - ./:/src
+      - /src/node_modules
+      - /src/vendor
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+
+  laravel10-mysql:
+    image: mysql:8.0.33
+    command: --max_allowed_packet=32505856
+    container_name: "laravel10-mysql"
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=laravel10
+    ports:
+      - 3306:3306
+
+  laravel10-redis:
+    image: redis:alpine
+    container_name: "laravel10-redis"
+    ports:
+      - 16379:6379
