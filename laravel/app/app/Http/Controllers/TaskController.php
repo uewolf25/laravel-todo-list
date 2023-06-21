@@ -13,9 +13,13 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks = Task::where('status', false)->get();
+        // 未完了のタスクを取得
+        $incomplete_tasks = Task::where('status', false)->get();
 
-        return view('tasks.index', compact('tasks'));
+        // 完了のタスクを取得
+        $done_tasks = Task::where('status', true)->get();
+
+        return view('tasks.index', compact('incomplete_tasks', 'done_tasks'));
     }
 
     /**
@@ -28,6 +32,7 @@ class TaskController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * 登録処理
      */
     public function store(Request $request)
     {
@@ -62,6 +67,7 @@ class TaskController extends Controller
 
     /**
      * Show the form for editing the specified resource.
+     * 編集内容をトップ画面へ送る処理
      */
     public function edit(string $id)
     {
@@ -71,9 +77,11 @@ class TaskController extends Controller
 
     /**
      * Update the specified resource in storage.
+     * 編集処理・ステータス変更処理
      */
     public function update(Request $request, string $id)
     {
+        // 編集処理
         if($request->status === null){
             
             $rules = [
@@ -92,10 +100,19 @@ class TaskController extends Controller
             $task->name = $request->input('task_name');
     
             $task->save();
+
+        // ステータス更新処理
         } else{
             $task = Task::find($id);
 
-            $task->status = true;
+            // 完了→未完了
+            if($task->status){
+                $task->status = false;
+
+            // 未完了→完了
+            } else{
+                $task->status = true;
+            }
 
             $task->save();
         }
@@ -105,6 +122,7 @@ class TaskController extends Controller
 
     /**
      * Remove the specified resource from storage.
+     * 削除処理
      */
     public function destroy(string $id)
     {
